@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="jsmsg" style="background:#d9534f;color:#fff;padding:12px 16px;text-align:center;font-weight:700;font-size:14px;line-height:1.7">الجافاسكربت ما اشتغل في هذا المتصفح، فالنموذج ما يشتغل. تأكد إن style.css و script.js بنفس مجلد index.html، وافتح الصفحة من متصفح مو من معاينة ديسكورد أو الملفات.<div id="jserr" dir="ltr" style="font-weight:400;font-size:12px;opacity:.9"></div></div>
+<div id="jsmsg" style="background:#d9534f;color:#fff;padding:12px 16px;text-align:center;font-weight:700;font-size:14px;line-height:1.7">الجافاسكربت ما اشتغل في هذا المتصفح، فالنموذج ما يشتغل. تأكد إن style.css و script.js و grinders.js و micron.js بنفس مجلد index.html، وافتح الصفحة من متصفح مو من معاينة ديسكورد أو الملفات.<div id="jserr" dir="ltr" style="font-weight:400;font-size:12px;opacity:.9"></div></div>
 <div class="wrap">
 <main>
 <div class="top"><h1>سجل التحضير</h1><button type="button" class="btn" id="theme" aria-label="تبديل الوضع الداكن والفاتح"></button></div>
@@ -29,7 +29,7 @@
 <label>الفلتر<input type="text" id="filter" placeholder="Sibarist / ورق أبيض"></label>
 <label>الطاحونة<select id="grinder" data-o="1"></select><input type="text" id="grinder_o" hidden placeholder="اكتب هنا"></label>
 <label>درجة الطحن<input type="text" id="grind" placeholder="3.0 / 7.5"></label>
-<div class="mic" style="grid-column:1/-1"><div id="micv"></div><label class="chk"><input type="checkbox" id="addmic" checked> أضف الميكرون للنص الجاهز</label><div class="hint">الميكرون = الكليكات × حركة البر لكل كليك. هذا بعد البر عن الصفر مو حجم الحبيبات الفعلي، يصلح للمقارنة التقريبية بين الطواحين.</div></div>
+<div class="mic" style="grid-column:1/-1"><div id="micv"></div><label class="chk"><input type="checkbox" id="addmic" checked> أضف الميكرون للنص الجاهز</label><div class="hint">الميكرون تقدير لحجم الحبيبات من جدول كل طاحونة (Honest Coffee Guide عبر CoffeeOS): كل إعداد خطوة متساوية بين أنعم وأخشن قيمة في الجدول. تقريبي، يصلح للمقارنة بين الطواحين مو كقياس دقيق.</div></div>
 <label>الماء<input type="text" id="water" placeholder="Volvic / ٦٠ صفا ٤٠"></label>
 <label>الحرارة (°م)<input type="number" id="temp" inputmode="decimal" placeholder="93"></label>
 </div>
@@ -75,6 +75,8 @@
 </aside>
 </div>
 
+<script src="grinders.js"></script>
+<script src="micron.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
