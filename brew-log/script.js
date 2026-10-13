@@ -95,11 +95,12 @@ function render(){
   var head=[val("roaster")?"["+val("roaster")+"]":"",val("coffee")].filter(Boolean).join(" ");
   var t=head?head+(val("method")?" — "+val("method"):""):"";
   $("title").textContent=t||"العنوان يظهر هنا بعد ما تكتب المحمصة والمحصول";
-  var L=[];
-  L.push(line("المحمصة",val("roaster")),line("المحصول",val("coffee")),line("البلد",val("origin")),line("المعالجة",val("process")),line("تاريخ التحميص",fmtDate(val("roast"))),"",
-    line("طريقة التحضير",val("method")),line("الأداة",val("tool")),line("الفلتر",val("filter")),line("الطاحونة",val("grinder")),line("درجة الطحن",val("grind")?val("grind")+(mu&&$("addmic").checked?" ("+mu+")":""):""),
+  // Empty fields are dropped inside each block so they leave no blank lines in the post.
+  var coffee=[line("المحمصة",val("roaster")),line("المحصول",val("coffee")),line("البلد",val("origin")),line("المعالجة",val("process")),line("السلالة",val("variety")),line("درجة التحميص",val("level")),line("تاريخ التحميص",fmtDate(val("roast")))].filter(Boolean);
+  var brew=[line("طريقة التحضير",val("method")),line("الأداة",val("tool")),line("الفلتر",val("filter")),line("الطاحونة",val("grinder")),line("درجة الطحن",val("grind")?val("grind")+(mu&&$("addmic").checked?" ("+mu+")":""):""),
     line("الماء",val("water")),line("الحرارة",val("temp")?val("temp")+"°":""),line("الجرعة",val("dose")?val("dose")+" غ":""),line("الناتج",val("yield")?val("yield")+" غ":""),
-    (d>0&&y>0)?"النسبة: 1:"+(y/d).toFixed(1):"",line("الوقت الكلي",val("time")));
+    (d>0&&y>0)?"النسبة: 1:"+(y/d).toFixed(1):"",line("الوقت الكلي",val("time"))].filter(Boolean);
+  var L=coffee.concat(coffee.length&&brew.length?[""]:[],brew);
   var run=0;var ps=[].slice.call(document.querySelectorAll(".pour")).map(function(p){var a=p.querySelector(".a").value.trim(),t=p.querySelector(".t").value.trim(),b=p.querySelector(".nt input").value.trim(),f="",bad=false;if(t!==""){var sec=parseT(t);if(sec===null)bad=true;else{run+=sec;f=fmtT(run)}}p.querySelector(".tm").textContent=bad?"؟ مثل 1:20":(f?"= "+f:"");var parts=[a?a+" مل":"",f,b].filter(Boolean);return parts.length?"- "+parts.join(" | "):""}).filter(Boolean);
   if(ps.length){L.push("","الوصفة:");L=L.concat(ps)}
   var sc=[];
