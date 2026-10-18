@@ -4,8 +4,7 @@
 
 **عبّ النموذج، وانسخ البوست جاهز لديسكورد.**
 
-[**🔗 افتح الموقع**](https://brew-log-brew-log.vercel.app/)
-
+https://h2beanbook.vercel.app/
 ---
 
 ## 💡 الفكرة من المشروع
