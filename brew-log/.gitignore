@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+build/
+.next/
+.turbo/
+out/
+
+# Cache
+.cache/
+.vercel/
+.parcel-cache/
+
+# Build info
+*.tsbuildinfo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

@@ -1,0 +1,21 @@
+{
+  "name": "brew-log",
+  "version": "1.0.0",
+  "description": "Brew Log - Coffee brewing notes and recipe formatter",
+  "main": "grinders.js",
+  "scripts": {
+    "test": "echo \"No tests specified\"",
+    "dev": "npx serve .",
+    "lint": "echo \"No linting configured\""
+  },
+  "keywords": [
+    "coffee",
+    "brewing",
+    "vercel"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}
