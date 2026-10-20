@@ -119,7 +119,9 @@ function copy(text,label){
   function fb(){var ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");ok()}catch(e){$("msg").textContent="ما اننسخ، حدد النص وانسخه يدوي"}document.body.removeChild(ta)}
   try{navigator.clipboard.writeText(text).then(ok,fb)}catch(e){fb()}
 }
-$("copyAll").onclick=function(){copy($("out").value,"النص")};
+// Added to the copied post only. <...> stops Discord from showing a link preview card.
+var SITE="https://h2beanbook.vercel.app";
+$("copyAll").onclick=function(){var t=$("out").value;if(t)t+="\n\n☕✨ **عجبك؟ سوّ سجلك بنفسك!**\n👉 <"+SITE+">";copy(t,"النص")};
 $("copyTitle").onclick=function(){var t=$("title").textContent;if(t.indexOf("يظهر هنا")<0)copy(t,"العنوان")};
 $("reset").onclick=function(){
   document.querySelectorAll("input[type=text],input[type=number],input[type=date],textarea:not(#out)").forEach(function(e){e.value=""});
