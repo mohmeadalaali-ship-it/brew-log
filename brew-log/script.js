@@ -5,11 +5,16 @@ $("jsmsg").style.display="none";
 var scores=[["الحلاوة","sw"],["الحمضية","ac"],["القوام","bd"],["المرارة","bt"],["النظافة","cl"]];
 var adjs=["أنعم","أخشن","حرارة أعلى","حرارة أقل","ريشيو أطول","ريشيو أقصر","صب أهدأ","صب أعنف","تغيير فلتر","تغيير ماء","تغيير أداة"];
 var sl=$("sliders");
-scores.forEach(function(s){var d=document.createElement("div");d.className="sl";d.innerHTML='<span>'+s[0]+'</span><input type="range" min="0" max="10" value="5" id="'+s[1]+'" data-touched="0"><b id="'+s[1]+'v">—</b>';sl.appendChild(d)});
+scores.forEach(function(s){var d=document.createElement("div");d.className="sl";d.innerHTML='<span>'+s[0]+'</span><input type="range" min="0" max="10" value="5" id="'+s[1]+'" data-touched="0" aria-label="'+s[0]+'"><b id="'+s[1]+'v" role="button" tabindex="0" title="اضغط للمسح">—</b>';sl.appendChild(d)});
+// A tap without dragging still counts as a rating; tapping the number clears it.
+function untouch(id){$(id).value=5;$(id).dataset.touched="0";render()}
+sl.addEventListener("click",function(e){var t=e.target;if(t.type==="range"){t.dataset.touched="1";render()}else if(t.tagName==="B"&&$(t.id.slice(0,-1)).dataset.touched==="1")untouch(t.id.slice(0,-1))});
+sl.addEventListener("keydown",function(e){if(e.target.tagName==="B"&&(e.key==="Enter"||e.key===" ")){e.preventDefault();untouch(e.target.id.slice(0,-1))}});
 adjs.forEach(function(a){var l=document.createElement("label");l.innerHTML='<input type="checkbox" value="'+a+'"> '+a;$("adj").appendChild(l)});
 
-function addPour(){var d=document.createElement("div");d.className="pour";
-d.innerHTML='<div class="ac"><input class="a" type="number" min="0" step="10" inputmode="numeric" placeholder="50" aria-label="الكمية بالمل"><span>مل</span></div><div class="tc"><input class="t" type="text" inputmode="numeric" autocomplete="off" placeholder="0:45" aria-label="وقت الصبّة"><span class="tm" dir="ltr"></span></div><div class="nt"><input type="text" placeholder="تفتيح / صب بطيء" aria-label="ملاحظة"></div><button type="button" class="btn del" title="حذف الصبّة" aria-label="حذف الصبّة">✕</button>';
+function addPour(v){var d=document.createElement("div");d.className="pour";
+d.innerHTML='<div class="ac"><input class="a" type="number" min="0" step="10" inputmode="numeric" enterkeyhint="next" placeholder="50" aria-label="الكمية بالمل"><span>مل</span></div><div class="tc"><input class="t" type="text" inputmode="numeric" enterkeyhint="next" autocomplete="off" placeholder="0:45" aria-label="مدة الصبّة"><span class="tm" dir="ltr"></span></div><div class="nt"><input type="text" enterkeyhint="next" placeholder="تفتيح أو صب بطيء" aria-label="ملاحظة"></div><button type="button" class="btn del" title="حذف الصبّة" aria-label="حذف الصبّة">✕</button>';
+if(v){d.querySelector(".a").value=v[0]||"";d.querySelector(".t").value=v[1]||"";d.querySelector(".nt input").value=v[2]||""}
 $("pours").appendChild(d)}
 function parseT(v){v=v.replace(/[٠-٩]/g,function(d){return d.charCodeAt(0)-1632}).replace(/[.,٫،;]/g,":");
 if(!/^\d+(:\d{1,2})?$/.test(v))return null;
@@ -32,12 +37,25 @@ function grName(k){var g=Micron.info(k);return g?g.name:EX[k]?EX[k].l:""}
 var gs=$("grinder");
 function opts(keys){return keys.map(function(k){return'<option value="'+k+'">'+esc(grName(k))+'</option>'}).join("")}
 var exk=Object.keys(EX);
-gs.innerHTML='<option value="">—</option>'
-  +'<optgroup label="الأكثر استخداماً">'+opts(POP)+'</optgroup>'
-  +'<optgroup label="كل الطواحين (A-Z)">'+opts(Micron.list.map(function(g){return g.key}))+'</optgroup>'
-  +'<optgroup label="حركة البر فقط، مو حجم حبيبات">'+opts(exk.filter(function(k){return !EX[k].nd}))+'</optgroup>'
-  +'<optgroup label="بدون رقم ميكرون">'+opts(exk.filter(function(k){return EX[k].nd}))+'</optgroup>'
-  +'<option value="__o">طاحونة ثانية</option>';
+var allKeys=Micron.list.map(function(g){return g.key}).concat(exk);
+var ALIAS=[["كماندنتي","comandante"],["كوماندانتي","comandante"],["تايمور","timemore"],["تايمر","timemore"],["كينقرايندر","kingrinder"],["كنقرايندر","kingrinder"],["فيلو","fellow"],["لاقوم","lagom"],["نيش","niche"],["باراتزا","baratza"],["يوريكا","eureka"],["ويبر","weber"],["فاريا","varia"],["زبريسو","1zpresso"],["زيبريسو","1zpresso"]];
+function gnorm(q){q=String(q).toLowerCase();ALIAS.forEach(function(a){q=q.split(a[0]).join(a[1])});return q.replace(/[\s\-_.()+]/g,"")}
+// The search box narrows the long list; with one match it is picked straight away.
+function buildGrinders(q){
+  var cur=gs.value,n=gnorm(q||"");
+  if(!n){gs.innerHTML='<option value="">—</option>'
+    +'<optgroup label="الأكثر استخداماً">'+opts(POP)+'</optgroup>'
+    +'<optgroup label="كل الطواحين (A-Z)">'+opts(Micron.list.map(function(g){return g.key}))+'</optgroup>'
+    +'<optgroup label="حركة البر فقط، مو حجم حبيبات">'+opts(exk.filter(function(k){return !EX[k].nd}))+'</optgroup>'
+    +'<optgroup label="بدون رقم ميكرون">'+opts(exk.filter(function(k){return EX[k].nd}))+'</optgroup>'
+    +'<option value="__o">طاحونة ثانية</option>';gs.value=cur;return}
+  var hit=allKeys.filter(function(k){return gnorm(grName(k)).indexOf(n)>-1});
+  var keep=cur&&cur!=="__o"&&hit.indexOf(cur)<0?[cur]:[];
+  gs.innerHTML='<option value="">'+(hit.length?"— "+hit.length+" نتيجة —":"— ما لقيت، جرّب اسم ثاني —")+'</option>'+opts(keep.concat(hit))+'<option value="__o">طاحونة ثانية</option>';
+  gs.value=hit.length===1?hit[0]:cur;
+}
+buildGrinders("");
+$("gq").addEventListener("input",function(e){e.stopPropagation();buildGrinders(this.value);render()});
 function clicks(g,s){
   s=Micron.norm(s);
   var p=s.split("."),a=p.map(Number);
@@ -57,8 +75,8 @@ function clicks(g,s){
 // Returns the text added to the post after the grind setting, or "" when there is nothing to add.
 function mic(){
   var k=$("grinder").value,s=$("grind").value.trim(),el=$("micv"),x=EX[k],g=!x&&Micron.info(k);
-  if(!g&&!x){$("grind").placeholder="3.0 / 7.5";el.innerHTML='<span class="hint">اختر الطاحونة وبعدين اكتب الرقم عشان يتحول لميكرون</span>';return""}
-  if(x&&x.nd){$("grind").placeholder="3.0 / 7.5";el.innerHTML='<b>'+esc(x.l)+'</b><br><span class="hint">'+x.nd+'</span>';return""}
+  if(!g&&!x){$("grind").placeholder="مثل 24";el.innerHTML='<span class="hint">اختر الطاحونة وبعدين اكتب الرقم عشان يتحول لميكرون</span>';return""}
+  if(x&&x.nd){$("grind").placeholder="مثل 24";el.innerHTML='<b>'+esc(x.l)+'</b><br><span class="hint">'+x.nd+'</span>';return""}
   if(x){
     $("grind").placeholder=x.ph;
     var hx='<b>'+esc(x.l)+'</b>: '+x.um+' µm حركة بر لكل كليك <span class="hint">('+x.s+'، ما لها جدول حجم حبيبات فهذا مو قابل للمقارنة مع باقي الطواحين)</span>';
@@ -70,7 +88,7 @@ function mic(){
     return"≈"+n+" µm حركة بر";
   }
   $("grind").placeholder=g.ph;
-  var head='<b>'+esc(g.name)+'</b>: من '+g.lo+' إلى '+g.hi+' µm <span class="hint">(تقدير حجم الحبيبات من جدول الطاحونة)</span>';
+  var head='<b>'+esc(g.name)+'</b> <span class="hint">من '+g.lo+' إلى '+g.hi+' µm</span>';
   if(!s){el.innerHTML=head+'<br><span class="hint">'+esc(Micron.hint(k))+'</span>';return""}
   var r=Micron.calc(k,s);
   if(r.e){el.innerHTML=head+'<br><span style="color:#d9534f">'+esc(r.e)+'</span>';return""}
@@ -78,7 +96,7 @@ function mic(){
   el.innerHTML=head+'<br><span class="big">≈ '+r.um+' µm</span> <span class="hint">'+esc(how)+'</span>'
     +(r.alt?'<br><span class="hint">إذا تقصد '+esc(r.alt)+' اكتبها كاملة</span>':'')
     +(r.zone?'<br><span class="hint">على الطاحونة: '+esc(r.zone)+'</span>':'')
-    +(r.methods.length?'<br><span class="hint">يناسب عادة: '+esc(r.methods.join("، "))+'</span>':'');
+    +(r.methods.length?'<br><span class="hint">يناسب عادة: <span class="methods">'+esc(r.methods.slice(0,3).join("، "))+'</span></span>':'');
   return"≈"+r.um+" µm";
 }
 function val(i){var e=$(i);if(e.tagName==="SELECT"){if(e.value==="__o")return $(i+"_o").value.trim();if(i==="grinder"&&e.value)return grName(e.value)}return e.value.trim()}
@@ -109,28 +127,79 @@ function render(){
   if(val("notes"))L.push("",line("ملاحظات عامة",val("notes")));
   var ch=[].slice.call(document.querySelectorAll("#adj input:checked")).map(function(c){return"- "+c.value});
   if(ch.length){L.push("","وش يحتاج تعديل؟");L=L.concat(ch)}
-  $("out").value=L.join("\n").replace(/^\n+/,"").replace(/\n{3,}/g,"\n\n");
+  var o=$("out");o.value=L.join("\n").replace(/^\n+/,"").replace(/\n{3,}/g,"\n\n");
+  o.style.height="auto";o.style.height=o.scrollHeight+2+"px";
+  save();
 }
 document.addEventListener("input",function(e){if(e.target.type==="range")e.target.dataset.touched="1";render()});
 document.addEventListener("change",render);
 
+// Feedback shows in a toast so it is seen even when the side panel is off screen.
+var toastT;
+function toast(msg,act,ms){
+  var t=$("toast");t.textContent=msg;
+  if(act){var b=document.createElement("button");b.type="button";b.textContent=act[0];b.onclick=function(){t.hidden=true;act[1]()};t.appendChild(b)}
+  t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},ms||2500);
+}
 function copy(text,label){
-  function ok(){$("msg").textContent="تم نسخ "+label+" ✓"}
-  function fb(){var ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");ok()}catch(e){$("msg").textContent="ما اننسخ، حدد النص وانسخه يدوي"}document.body.removeChild(ta)}
+  function ok(){$("msg").textContent="تم نسخ "+label+" ✓";toast("تم نسخ "+label+" ✓")}
+  function no(){toast("ما اننسخ، حدد النص وانسخه يدوي")}
+  function fb(){var ta=document.createElement("textarea");ta.value=text;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy")?ok():no()}catch(e){no()}document.body.removeChild(ta)}
   try{navigator.clipboard.writeText(text).then(ok,fb)}catch(e){fb()}
 }
-$("copyAll").onclick=function(){copy($("out").value,"النص")};
-$("copyTitle").onclick=function(){var t=$("title").textContent;if(t.indexOf("يظهر هنا")<0)copy(t,"العنوان")};
-$("reset").onclick=function(){
-  document.querySelectorAll("input[type=text],input[type=number],input[type=date],textarea:not(#out)").forEach(function(e){e.value=""});
+// Added to the copied post only. <...> stops Discord from showing a link preview card.
+var SITE="https://h2beanbook.vercel.app";
+function postText(){var t=$("out").value;return t?t+"\n\n☕✨ **عجبك؟ سوّ سجلك بنفسك!**\n👉 <"+SITE+">":""}
+function titleText(){var t=$("title").textContent;return t.indexOf("يظهر هنا")<0?t:""}
+$("copyAll").onclick=function(){var t=postText();if(t)copy(t,"النص");else toast("النص فاضي، عبّ الحقول أول")};
+$("copyTitle").onclick=function(){var t=titleText();if(t)copy(t,"العنوان");else toast("اكتب المحمصة والمحصول عشان يطلع العنوان")};
+$("copyBoth").onclick=function(){var t=[titleText(),postText()].filter(Boolean).join("\n\n");if(t)copy(t,"العنوان والنص");else toast("ما فيه شي ينسخ، عبّ الحقول أول")};
+if(navigator.share){$("share").hidden=false;$("share").onclick=function(){var t=postText();if(!t){toast("النص فاضي، عبّ الحقول أول");return}navigator.share({text:t}).catch(function(){})}}
+
+// The whole form is kept in this browser so switching apps or reloading loses nothing.
+var DRAFT="brewlog-draft-v1";
+function snap(){
+  var v={};
+  document.querySelectorAll("main input[id],main select[id],main textarea[id]").forEach(function(e){if(e.id!=="gq"&&e.type!=="range")v[e.id]=e.type==="checkbox"?e.checked:e.value});
+  var r={};scores.forEach(function(x){r[x[1]]=[$(x[1]).value,$(x[1]).dataset.touched]});
+  var p=[].slice.call(document.querySelectorAll(".pour")).map(function(d){return[d.querySelector(".a").value,d.querySelector(".t").value,d.querySelector(".nt input").value]});
+  var a=[].slice.call(document.querySelectorAll("#adj input:checked")).map(function(c){return c.value});
+  return {v:v,r:r,p:p,a:a};
+}
+function load(st){
+  $("gq").value="";buildGrinders("");
+  Object.keys(st.v||{}).forEach(function(id){var e=$(id);if(!e)return;if(e.type==="checkbox")e.checked=!!st.v[id];else e.value=st.v[id]});
+  Object.keys(st.r||{}).forEach(function(id){if($(id)){$(id).value=st.r[id][0];$(id).dataset.touched=st.r[id][1]==="1"?"1":"0"}});
+  $("pours").innerHTML="";(st.p&&st.p.length?st.p:[0,0]).forEach(function(x){addPour(x||null)});
+  document.querySelectorAll("#adj input").forEach(function(c){c.checked=(st.a||[]).indexOf(c.value)>-1});
+}
+var loaded=false;
+function save(){if(!loaded)return;try{localStorage.setItem(DRAFT,JSON.stringify(snap()))}catch(e){}}
+function clearForm(){
+  document.querySelectorAll("input[type=text],input[type=search],input[type=number],input[type=date],textarea:not(#out)").forEach(function(e){e.value=""});
   document.querySelectorAll("#adj input").forEach(function(c){c.checked=false});
+  buildGrinders("");
   document.querySelectorAll("select").forEach(function(x){x.selectedIndex=0});
+  $("addmic").checked=true;
   scores.forEach(function(s){$(s[1]).value=5;$(s[1]).dataset.touched="0"});
-  $("pours").innerHTML="";addPour();addPour();render();
-};
+  $("pours").innerHTML="";addPour();addPour();
+}
+// Reset is one tap away from the copy buttons, so it can be undone for a few seconds.
+$("reset").onclick=function(){var before=snap();clearForm();render();toast("انمسح كل شي",["تراجع",function(){load(before);render();toast("رجع كل شي ✓")}],7000)};
+
+// Enter jumps to the next field instead of doing nothing.
+document.querySelectorAll("main input").forEach(function(e){if(!/^(checkbox|range)$/.test(e.type))e.setAttribute("enterkeyhint","next")});
+document.addEventListener("keydown",function(e){
+  var t=e.target;if(e.key!=="Enter"||e.isComposing||t.tagName!=="INPUT"||/^(checkbox|range)$/.test(t.type))return;
+  e.preventDefault();
+  var f=[].slice.call(document.querySelectorAll("main input,main select,main textarea")).filter(function(x){return x.offsetParent&&!/^(checkbox|range)$/.test(x.type)});
+  var i=f.indexOf(t);if(f[i+1])f[i+1].focus();else t.blur();
+});
 function isDark(){var t=document.documentElement.getAttribute("data-theme");if(t)return t==="dark";return !!(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)}
 function themeLabel(){var d=isDark();$("theme").textContent=d?"☀️ فاتح":"🌙 داكن";document.documentElement.style.colorScheme=d?"dark":"light"}
 try{var st=localStorage.getItem("theme");if(st==="dark"||st==="light")document.documentElement.setAttribute("data-theme",st)}catch(e){}
 $("theme").onclick=function(){var t=isDark()?"light":"dark";document.documentElement.setAttribute("data-theme",t);try{localStorage.setItem("theme",t)}catch(e){}themeLabel()};
 themeLabel();
+try{var dr=localStorage.getItem(DRAFT);if(dr)load(JSON.parse(dr))}catch(e){}
+loaded=true;
 render();

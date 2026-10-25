@@ -44,7 +44,9 @@ var Micron=(function(){
   function result(g,i,via,extra){
     var u=um(g,i),r={um:u,i:i,via:via,label:g.t[Math.round(i)]};
     r.zone=g.z.filter(function(z){return u>=z[1]&&u<=z[2]}).map(function(z){return z[0]}).join("، ");
-    r.methods=BREW_METHODS.filter(function(m){return u>=m.min&&u<=m.max}).map(function(m){return m.l});
+    // Best fit first: the method whose range is centred closest to this size.
+    function off(m){return Math.abs(u-(m.min+m.max)/2)/(m.max-m.min)}
+    r.methods=BREW_METHODS.filter(function(m){return u>=m.min&&u<=m.max}).sort(function(a,b){return off(a)-off(b)}).map(function(m){return m.l});
     for(var k in extra)r[k]=extra[k];
     return r;
   }

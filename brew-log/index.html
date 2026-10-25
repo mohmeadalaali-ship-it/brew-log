@@ -11,8 +11,8 @@
 <div id="jsmsg" style="background:#d9534f;color:#fff;padding:12px 16px;text-align:center;font-weight:700;font-size:14px;line-height:1.7">الجافاسكربت ما اشتغل في هذا المتصفح، فالنموذج ما يشتغل. تأكد إن style.css و script.js و grinders.js و micron.js بنفس مجلد index.html، وافتح الصفحة من متصفح مو من معاينة ديسكورد أو الملفات.<div id="jserr" dir="ltr" style="font-weight:400;font-size:12px;opacity:.9"></div></div>
 <div class="wrap">
 <main>
-<div class="top"><h1>سجل التحضير</h1><button type="button" class="btn" id="theme" aria-label="تبديل الوضع الداكن والفاتح"></button></div>
-<p class="sub">عبّ الحقول، والبوست يتركب جاهز على اليمين. الحقول الفاضية تنحذف تلقائي.</p>
+<div class="top"><h1>سجل التحضير</h1><div class="tb"><button type="button" class="btn" id="reset">مسح</button><button type="button" class="btn" id="theme" aria-label="تبديل الوضع الداكن والفاتح"></button></div></div>
+<p class="sub">عبّ الحقول، والبوست يتركب لك جاهز وأنت تكتب. الحقول الفاضية تنحذف تلقائي، وكلامك ينحفظ لو قفلت الصفحة.</p>
 
 <fieldset><legend>القهوة</legend>
 <div class="g">
@@ -28,11 +28,11 @@
 <div class="g">
 <label>طريقة التحضير<select id="method" data-o="1"><option value="">—</option><option>V60</option><option>Orea</option><option>Pulsar</option><option>AeroPress</option><option>B75</option><option>Origami</option><option>Kalita</option><option>Hario Switch</option><option>Chemex</option><option>Clever Dripper</option><option value="__o">طريقة ثانية</option></select><input type="text" id="method_o" hidden placeholder="اكتب هنا"></label>
 <label>الأداة<input type="text" id="tool" placeholder="V60 02 زجاج"></label>
-<label>الفلتر<input type="text" id="filter" placeholder="Sibarist / ورق أبيض"></label>
-<label>الطاحونة<select id="grinder" data-o="1"></select><input type="text" id="grinder_o" hidden placeholder="اكتب هنا"></label>
-<label>درجة الطحن<input type="text" id="grind" placeholder="3.0 / 7.5"></label>
-<div class="mic" style="grid-column:1/-1"><div id="micv"></div><label class="chk"><input type="checkbox" id="addmic" checked> أضف الميكرون للنص الجاهز</label><div class="hint">الميكرون تقدير لحجم الحبيبات من جدول كل طاحونة (Honest Coffee Guide عبر CoffeeOS): كل إعداد خطوة متساوية بين أنعم وأخشن قيمة في الجدول. تقريبي، يصلح للمقارنة بين الطواحين مو كقياس دقيق.</div></div>
-<label>الماء<input type="text" id="water" placeholder="Volvic / ٦٠ صفا ٤٠"></label>
+<label>الفلتر<input type="text" id="filter" placeholder="Sibarist أو ورق أبيض"></label>
+<label>الطاحونة<input type="search" id="gq" placeholder="🔍 ابحث عن طاحونتك" autocomplete="off" aria-label="ابحث عن الطاحونة"><select id="grinder" data-o="1" aria-label="الطاحونة"></select><input type="text" id="grinder_o" hidden placeholder="اكتب هنا"></label>
+<label>درجة الطحن<input type="text" id="grind" placeholder="مثل 24"></label>
+<div class="mic" style="grid-column:1/-1"><div id="micv"></div><label class="chk"><input type="checkbox" id="addmic" checked> أضف الميكرون للنص الجاهز</label><details class="hint"><summary>من وين جا الرقم؟</summary>الميكرون تقدير لحجم الحبيبات من جدول كل طاحونة (Honest Coffee Guide عبر CoffeeOS): كل إعداد خطوة متساوية بين أنعم وأخشن قيمة في الجدول. تقريبي، يصلح للمقارنة بين الطواحين مو كقياس دقيق.</details></div>
+<label>الماء<input type="text" id="water" placeholder="Volvic أو صفا"></label>
 <label>الحرارة (°م)<input type="number" id="temp" inputmode="decimal" placeholder="93"></label>
 </div>
 <div class="g" style="margin-top:10px">
@@ -44,8 +44,8 @@
 </fieldset>
 
 <fieldset><legend>الوصفة (الصبّات)</legend>
-<div class="hint" style="margin:0 0 8px">اكتب وقت كل صبّة مباشرة: 45 = 0:45، و120 = 1:20، أو اكتبها بنقطتين 1:20. </div>
-<div class="ph"><span>الكمية</span><span>الوقت</span><span>ملاحظة</span><span></span></div>
+<div class="hint" style="margin:0 0 8px">اكتب مدة كل صبّة (من بداية الصبّة إلى بداية اللي بعدها)، والوقت من البداية ينحسب لحاله جنبها. 45 = 0:45، و120 = 1:20، أو اكتبها بنقطتين 1:20.</div>
+<div class="ph"><span>الكمية</span><span>المدة</span><span>ملاحظة</span><span></span></div>
 <div id="pours"></div>
 <button type="button" class="btn" id="addPour">+ أضف صبّة</button>
 </fieldset>
@@ -71,11 +71,13 @@
 <div class="row">
 <button type="button" class="btn p" id="copyAll">نسخ النص</button>
 <button type="button" class="btn" id="copyTitle">نسخ العنوان</button>
-<button type="button" class="btn" id="reset">مسح</button>
+<button type="button" class="btn" id="copyBoth" aria-label="نسخ العنوان والنص">نسخ الكل</button>
+<button type="button" class="btn" id="share" hidden>مشاركة</button>
 </div>
 <div class="hint" id="msg">اختر التاقات المذكورة فوق من ديسكورد بعد ما تلصق العنوان.</div>
 </aside>
 </div>
+<div id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="grinders.js"></script>
 <script src="micron.js"></script>
